@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 
+// Initializes the line parameters.
 Line::Line(int initialX, int requestedLength,
     int windowHeight, SymbolColor initialColor)
     : xPosition(initialX),

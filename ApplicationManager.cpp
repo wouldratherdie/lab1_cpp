@@ -14,6 +14,7 @@
 
 namespace
 {
+    // Selects a color for the entire line.
     SymbolColor selectLineColor(
         bool epilepsyMode,
         std::mt19937& generator)

@@ -5,6 +5,7 @@
 
 namespace
 {
+    // Converts a symbol color to a WinAPI console color.
     WORD getConsoleColor(SymbolColor color)
     {
         switch (color)
