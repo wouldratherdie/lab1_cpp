@@ -31,4 +31,6 @@ private:
     );
 
     static void showHelp();
+
+    bool runAnimation(const Settings& settings) const;
 };

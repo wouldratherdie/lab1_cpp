@@ -1,8 +1,44 @@
 #include "ApplicationManager.h"
+#include "Line.h"
+#include "ConsoleUtils.h"
 
+#include <array>
+#include <chrono>
+#include <conio.h>
+#include <memory>
+#include <random>
+#include <thread>
 #include <iostream>
 #include <sstream>
 #include <cctype>
+
+namespace
+{
+    SymbolColor selectLineColor(
+        bool epilepsyMode,
+        std::mt19937& generator)
+    {
+        if (!epilepsyMode)
+            return SymbolColor::Green;
+
+        static const std::array<SymbolColor, 7> colors =
+        {
+            SymbolColor::Green,
+            SymbolColor::Blue,
+            SymbolColor::Cyan,
+            SymbolColor::Red,
+            SymbolColor::Magenta,
+            SymbolColor::Yellow,
+            SymbolColor::White
+        };
+
+        std::uniform_int_distribution<int> distribution(
+            0, static_cast<int>(colors.size()) - 1
+        );
+
+        return colors[distribution(generator)];
+    }
+}
 
 int ApplicationManager::run(int argumentCount, char* arguments[])
 {
@@ -30,11 +66,11 @@ int ApplicationManager::run(int argumentCount, char* arguments[])
         }
     }
 
-    std::cout << "\nParameters accepted:\n";
-    std::cout << "Speed: " << settings.speed << '\n';
-    std::cout << "Line length: " << settings.lineLength << '\n';
-    std::cout << "Epilepsy mode: "
-        << (settings.epilepsyMode ? "ON" : "OFF") << '\n';
+    if (!runAnimation(settings))
+    {
+        std::cerr << "Unable to initialize console animation.\n";
+        return 1;
+    }
 
     return 0;
 }
@@ -157,4 +193,74 @@ void ApplicationManager::showHelp()
         << "Help:\n"
         << "  lab1_cpp.exe --help\n"
         << "  lab1_cpp.exe /?\n";
+}
+
+bool ApplicationManager::runAnimation(const Settings& settings) const
+{
+    int windowWidth = 0;
+    int windowHeight = 0;
+
+    if (!ConsoleUtils::getWindowSize(windowWidth, windowHeight) ||
+        windowWidth <= 0 || windowHeight <= 0)
+        return false;
+
+    std::cout << "\nPress any key to stop the animation...\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(900));
+
+    if (!ConsoleUtils::clearScreen())
+        return false;
+
+    if (!ConsoleUtils::setCursorVisible(false))
+        return false;
+
+    std::mt19937 generator(std::random_device{}());
+
+    std::uniform_int_distribution<int> xDistribution(
+        0, windowWidth - 1
+    );
+
+    std::unique_ptr<Line> line;
+
+    const auto stepDuration =
+        std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<double>(1.0 / settings.speed)
+        );
+
+    auto nextStep = std::chrono::steady_clock::now();
+
+    while (!_kbhit())
+    {
+        if (!line || line->isFinished())
+        {
+            int xPosition = xDistribution(generator);
+
+            SymbolColor color = selectLineColor(
+                settings.epilepsyMode, generator
+            );
+
+            line = std::make_unique<Line>(
+                xPosition,
+                settings.lineLength,
+                windowHeight,
+                color
+            );
+        }
+
+        line->advance();
+
+        nextStep += stepDuration;
+        std::this_thread::sleep_until(nextStep);
+    }
+
+    _getch();
+
+    line.reset();
+
+    ConsoleUtils::clearScreen();
+    ConsoleUtils::setTextColor(SymbolColor::Green);
+    ConsoleUtils::setCursorVisible(true);
+
+    std::cout << "Animation stopped.\n";
+
+    return true;
 }
