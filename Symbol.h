@@ -20,6 +20,6 @@ public:
     SymbolColor getColor() const;
 
 private:
-    char value_;
-    SymbolColor color_;
+    char symbolValue;
+    SymbolColor symbolColor;
 };

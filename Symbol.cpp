@@ -1,15 +1,15 @@
 #include "Symbol.h"
 
 Symbol::Symbol(char value, SymbolColor color)
-    : value_(value), color_(color)
+    : symbolValue(value), symbolColor(color)
 {}
 
 char Symbol::getValue() const
 {
-    return value_;
+    return symbolValue;
 }
 
 SymbolColor Symbol::getColor() const
 {
-    return color_;
+    return symbolColor;
 }

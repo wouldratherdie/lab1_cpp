@@ -114,3 +114,33 @@ bool ConsoleUtils::getWindowSize(int& width, int& height)
 
     return true;
 }
+
+bool ConsoleUtils::drawSymbol(int x, int y, const Symbol& symbol)
+{
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if (console == nullptr || console == INVALID_HANDLE_VALUE)
+        return false;
+
+    if (!setCursorPosition(x, y) || !setTextColor(symbol.getColor()))
+        return false;
+
+    char value = symbol.getValue();
+    DWORD written = 0;
+
+    return WriteConsoleA(console, &value, 1, &written, nullptr)
+        && written == 1;
+}
+
+bool ConsoleUtils::eraseCharacter(int x, int y)
+{
+    if (!setCursorPosition(x, y))
+        return false;
+
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written = 0;
+    const char blank = ' ';
+
+    return WriteConsoleA(console, &blank, 1, &written, nullptr)
+        && written == 1;
+}

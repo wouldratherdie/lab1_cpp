@@ -10,4 +10,6 @@ public:
     static bool clearScreen();
     static bool setCursorVisible(bool visible);
     static bool getWindowSize(int& width, int& height);
+    static bool drawSymbol(int x, int y, const Symbol& symbol);
+    static bool eraseCharacter(int x, int y);
 };
